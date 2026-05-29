@@ -1,0 +1,57 @@
+[workspace]
+members = ["protocol"]
+resolver = "2"
+
+[package]
+name = "slimevr-wrangler"
+version = "0.10.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+build = "build.rs"
+rust-version = "1.65"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+iced = { version = "0.9", features = ["tokio", "svg", "canvas", "wgpu"] }
+iced_native = "0.10"
+iced_aw = { version = "0.5.0", default-features = false, features = ["grid"] }
+tokio = { version = "1.24.1", features = ["full"] }
+joycon-rs = { git = "https://github.com/carl-anders/joycon-rs" }
+directories = "5.0"
+self_update = { version = "0.36", features = [
+	"archive-zip",
+	"compression-zip-deflate",
+] }
+protocol = { path = "protocol", features = ["nalgebra032"] }
+itertools = "0.10"
+nalgebra = { version = "0.32", features = ["convert-mint"] }
+arc-swap = "1.5"
+vqf-cxx = { git = "https://github.com/kitlith/vqf-cxx", rev = "d1b94272cd2f73ea2baede3b785d3818f7411fc2" }
+keyvalues-parser = "0.1.0"
+regex = "1.6"
+thiserror = "1.0"
+spin_sleep = "1.1"
+rand = "0.8"
+wiimote-rs = "0.1.2"
+
+[target.'cfg(target_os="windows")'.dependencies]
+winreg = "0.11"
+
+[target.'cfg(target_os="windows")'.build-dependencies]
+winres = "0.1"
+
+[target.'cfg(target_os="linux")'.dependencies]
+evdev = { version = "0.12", features = ["tokio"] }
+upower_dbus = "0.3.2"
+zbus = { version = "3", default-features = false, features = ["tokio"] }
+users = "0.11"
+
+[profile.release]
+lto = true
+codegen-units = 1
+# panic = "abort" # Doesn't allow threads to catch themselves
+opt-level = "s"
+strip = true
