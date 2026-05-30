@@ -1,0 +1,49 @@
+name: macOS Universal Build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust targets
+        run: |
+          rustup target add x86_64-apple-darwin
+          rustup target add aarch64-apple-darwin
+
+      - name: Build for Intel
+        run: cargo build --release --target x86_64-apple-darwin
+
+      - name: Build for Apple Silicon
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Create universal binary
+        run: |
+          mkdir -p universal
+          lipo -create \
+            target/x86_64-apple-darwin/release/slimevr-wrangler-wii \
+            target/aarch64-apple-darwin/release/slimevr-wrangler-wii \
+            -output universal/slimevr-wrangler-wii
+
+      - name: Create .app bundle
+        run: |
+          mkdir -p SlimeVRWranglerWii.app/Contents/MacOS
+          mkdir -p SlimeVRWranglerWii.app/Contents/Resources
+          cp universal/slimevr-wrangler-wii SlimeVRWranglerWii.app/Contents/MacOS/
+          chmod +x SlimeVRWranglerWii.app/Contents/MacOS/slimevr-wrangler-wii
+          cp Info.plist SlimeVRWranglerWii.app/Contents/
+
+      - name: Zip app
+        run: zip -r SlimeVRWranglerWii-macos-universal.zip SlimeVRWranglerWii.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SlimeVRWranglerWii-macos-universal
+          path: SlimeVRWranglerWii-macos-universal.zip
